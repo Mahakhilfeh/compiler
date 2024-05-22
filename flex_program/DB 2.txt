@@ -1,0 +1,20 @@
+CREATE TABLE Course (
+    cono NUMBER PRIMARY KEY,
+    cname VARCHAR2(50),
+    stno NUMBER REFERENCES Student(stno)
+);
+---------------------------------------
+create table student( stno  number primary key,stname varchar(20) ,stmark  number );
+----------------------------------------
+ drop table course ;
+-------------------------------------------
+CREATE SEQUENCE student_ssequence
+    START WITH 1
+    INCREMENT BY 2
+    MINVALUE 2
+    MAXVALUE 9999
+    CYCLE;
+-------------------------------------------
+CREATE SYNONYM stud FOR Student;
+
+------------------------------------------

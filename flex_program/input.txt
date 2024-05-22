@@ -1,0 +1,9 @@
+program
+model sequential (sample_model) {
+    layer (type = input, in = 10, out = 5, activation = sigmoid)
+    layer (type = dense, in = 5, out = 3, activation = relu)
+    layer (type = output, in = 3, out = 1, activation = tanh)
+}
+train (data = "data.csv", labels = "labels.csv", loss = cross_entropy, optimizer = adam, epochs = 100, metrics = [accuracy,recall])
+predict ("test_data.csv")
+maha

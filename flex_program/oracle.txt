@@ -1,0 +1,154 @@
+package sortmergejoinn;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class SortMergeJoinn {
+
+    private Connection getConnection() throws SQLException {
+        String Driver = "sun.jdbc.odbc.JdbcOdbcDriver";
+        String url = "jdbc:odbc:Database41";
+
+        try {
+            Class.forName(Driver);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(SortMergeJoinn.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return DriverManager.getConnection(url);
+    }
+
+    public void performSortMergeJoin() {
+        Connection con = null;
+       System.out.println("Sort-Merge Join logic goes here!");
+
+        try {
+            con = getConnection();
+            Statement stmt = con.createStatement();
+
+            // Fetch data from table1
+            ResultSet rsTable1 = stmt.executeQuery("SELECT * FROM table1");
+            List<RowTable1> table1 = resultSetToTable1List(rsTable1);
+
+            // Fetch data from table2
+            ResultSet rsTable2 = stmt.executeQuery("SELECT * FROM table2");
+            List<RowTable2> table2 = resultSetToTable2List(rsTable2);
+
+            // Sort both tables based on the common column deptno
+            Collections.sort(table1);
+            Collections.sort(table2);
+
+            // Perform sort-merge join
+            List<RowResult> result = new ArrayList<>();
+            int i = 0, j = 0;
+            
+
+            while (i < table1.size() && j < table2.size()) {
+                if (table1.get(i).deptno == table2.get(j).deptno) {
+                    // Match found, add to the result
+                    result.add(new RowResult(table1.get(i).ename, table1.get(i).deptno, table2.get(j).description));
+                    i++;
+                   // j++;
+                } else if (table1.get(i).deptno < table2.get(j).deptno) {
+                    i++;
+                } else {
+                    j++;
+                }
+            }
+
+            // Print the result of the join
+            for (RowResult row : result) {
+                System.out.println("Name: " + row.ename + ", DeptNo: " + row.deptno + ", Description: " + row.description);
+            }
+
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SortMergeJoinn.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Close the connection in a finally block to ensure it's always closed
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SortMergeJoinn.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
+    private List<RowTable1> resultSetToTable1List(ResultSet resultSet) throws SQLException {
+        List<RowTable1> list = new ArrayList<>();
+        while (resultSet.next()) {
+            String ename = resultSet.getString("ename");
+            int deptno = resultSet.getInt("deptno");
+            list.add(new RowTable1(ename, deptno));
+        }
+        return list;
+    }
+
+    private List<RowTable2> resultSetToTable2List(ResultSet resultSet) throws SQLException {
+        List<RowTable2> list = new ArrayList<>();
+        while (resultSet.next()) {
+            int deptno = resultSet.getInt("deptno");
+            String description = resultSet.getString("description");
+            list.add(new RowTable2(deptno, description));
+        }
+        return list;
+    }
+
+    public static void main(String[] args) {
+        SortMergeJoinn example = new SortMergeJoinn();
+        example.performSortMergeJoin();
+        System.out.println("Connection closed");
+    }
+
+    private static class RowTable1 implements Comparable<RowTable1> {
+        String ename;
+        int deptno;
+
+        public RowTable1(String ename, int deptno) {
+            this.ename = ename;
+            this.deptno = deptno;
+        }
+
+        @Override
+        public int compareTo(RowTable1 other) {
+            return Integer.compare(this.deptno, other.deptno);
+        }
+    }
+
+    private static class RowTable2 implements Comparable<RowTable2> {
+        int deptno;
+        String description;
+
+        public RowTable2(int deptno, String description) {
+            this.deptno = deptno;
+            this.description = description;
+        }
+
+        @Override
+        public int compareTo(RowTable2 other) {
+            return Integer.compare(this.deptno, other.deptno);
+        }
+    }
+
+    private static class RowResult {
+        String ename;
+        int deptno;
+        String description;
+
+        public RowResult(String ename, int deptno, String description) {
+            this.ename = ename;
+            this.deptno = deptno;
+            this.description = description;
+        }
+    }
+}
